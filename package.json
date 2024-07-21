@@ -29,5 +29,6 @@
   },
   "dependencies": {
     "core-js": "^3.37.1"
-  }
+  },
+  "homepage": "https://28nosleep.github.io/mesto-project-ff/"
 }
