@@ -1,37 +1,44 @@
-// Функция для создания карточки
-export function createCard(cardData, deleteCallback, likeCallback, imageClickCallback) {
-  const cardTemplate = document.getElementById("card-template").content;
-  const cardElement = cardTemplate.cloneNode(true).querySelector(".card");
+// card.js
+
+function createCard(
+  cardData,
+  deleteCallback,
+  likeCallback,
+  imageClickCallback,
+  userId
+) {
+  const cardTemplate = document.querySelector("#card-template").content;
+  const cardElement = cardTemplate.querySelector(".card").cloneNode(true);
+
   const cardImage = cardElement.querySelector(".card__image");
   const cardTitle = cardElement.querySelector(".card__title");
+  const deleteButton = cardElement.querySelector(".card__delete-button");
   const likeButton = cardElement.querySelector(".card__like-button");
+  const likeCounter = cardElement.querySelector(".card__like-counter");
 
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
   cardTitle.textContent = cardData.name;
+  likeCounter.textContent = cardData.likes.length;
 
-  const deleteButton = cardElement.querySelector(".card__delete-button");
-  deleteButton.addEventListener("click", () => {
-    deleteCallback(cardElement);
-  });
+  if (cardData.owner._id !== userId) {
+    deleteButton.remove();
+  } else {
+    deleteButton.addEventListener("click", () =>
+      deleteCallback(cardElement, cardData._id)
+    );
+  }
 
-  likeButton.addEventListener("click", () => {
-    likeCallback(likeButton);
-  });
-
-  cardImage.addEventListener("click", () => {
-    imageClickCallback(cardData);
-  });
+  likeButton.classList.toggle(
+    "card__like-button_is-active",
+    cardData.likes.some((like) => like._id === userId)
+  );
+  likeButton.addEventListener("click", () =>
+    likeCallback(cardElement, cardData._id)
+  );
+  cardImage.addEventListener("click", () => imageClickCallback(cardData));
 
   return cardElement;
 }
 
-// Функция для удаления карточки
-export function deleteCard(cardElement) {
-  cardElement.remove();
-}
-
-// Функция для переключения состояния лайка
-export function handleLikeButton(likeButton) {
-  likeButton.classList.toggle("card__like-button_is-active");
-}
+export { createCard };
