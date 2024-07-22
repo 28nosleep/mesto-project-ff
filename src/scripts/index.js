@@ -1,5 +1,5 @@
 import "../pages/index.css";
-import { createCard, handleLikeButton } from "../components/card.js";
+import { createCard } from "../components/card.js";
 import { openModal, closeModal } from "../components/modal.js";
 import { enableValidation, clearValidation } from "./validation.js";
 import {
@@ -26,9 +26,7 @@ const imageElement = imagePopup.querySelector(".popup__image");
 const captionElement = imagePopup.querySelector(".popup__caption");
 const deleteConfirmPopup = document.querySelector(".popup_type_confirm");
 const avatarEditButton = document.querySelector(".profile__avatar-button");
-const avatarEditForm = document.querySelector(
-  ".popup_type_avatar .popup__form"
-);
+const avatarEditForm = document.querySelector(".popup_type_avatar .popup__form");
 const profileAvatar = document.querySelector(".profile__image");
 
 // Глобальные переменные
@@ -53,13 +51,10 @@ function handleImageClick(cardData) {
 }
 
 // Функция для обработки отправки формы редактирования профиля
-// Функция для обработки отправки формы редактирования профиля
 function handleProfileFormSubmit(evt) {
   evt.preventDefault();
   const nameInput = editProfileForm.querySelector(".popup__input_type_name");
-  const jobInput = editProfileForm.querySelector(
-    ".popup__input_type_description"
-  );
+  const jobInput = editProfileForm.querySelector(".popup__input_type_description");
   const submitButton = editProfileForm.querySelector(".popup__button");
   const originalButtonText = submitButton.textContent;
 
@@ -112,12 +107,8 @@ function handleNewCardFormSubmit(evt) {
 
 // Функция для обработки удаления карточки
 function handleDeleteCard(cardElement, cardId) {
-  const confirmButton = deleteConfirmPopup.querySelector(
-    ".popup__button_type_confirm"
-  );
-  const cancelButton = deleteConfirmPopup.querySelector(
-    ".popup__button_type_cancel"
-  );
+  const confirmButton = deleteConfirmPopup.querySelector(".popup__button_type_confirm");
+  const cancelButton = deleteConfirmPopup.querySelector(".popup__button_type_cancel");
   const originalButtonText = confirmButton.textContent;
 
   function confirmDelete() {
@@ -144,6 +135,11 @@ function handleDeleteCard(cardElement, cardId) {
 
   openModal(deleteConfirmPopup);
 
+  // Удаляем предыдущие обработчики событий
+  confirmButton.removeEventListener("click", confirmDelete);
+  cancelButton.removeEventListener("click", cancelDelete);
+
+  // Добавляем новые обработчики событий
   confirmButton.addEventListener("click", confirmDelete, { once: true });
   cancelButton.addEventListener("click", cancelDelete, { once: true });
 }
@@ -169,9 +165,7 @@ function handleLikeCard(cardElement, cardId) {
 // Функция для обработки отправки формы обновления аватара
 function handleAvatarFormSubmit(evt) {
   evt.preventDefault();
-  const linkInput = avatarEditForm.querySelector(
-    ".popup__input_type_avatar-url"
-  );
+  const linkInput = avatarEditForm.querySelector(".popup__input_type_avatar-url");
   const submitButton = avatarEditForm.querySelector(".popup__button");
   const originalButtonText = submitButton.textContent;
 
@@ -180,7 +174,7 @@ function handleAvatarFormSubmit(evt) {
 
   updateAvatar(linkInput.value)
     .then((updatedUser) => {
-      profileAvatar.style.backgroundImage = `url(${updatedUser.avatar})`;
+      profileAvatar.src = updatedUser.avatar;
       closeModal(evt.target.closest(".popup"));
     })
     .catch((err) => {
@@ -203,9 +197,7 @@ function setupEventListeners() {
 
   profileEditButton.addEventListener("click", () => {
     const nameInput = editProfileForm.querySelector(".popup__input_type_name");
-    const jobInput = editProfileForm.querySelector(
-      ".popup__input_type_description"
-    );
+    const jobInput = editProfileForm.querySelector(".popup__input_type_description");
     nameInput.value = profileTitle.textContent;
     jobInput.value = profileDescription.textContent;
     clearValidation(editProfileForm, validationConfig);
@@ -219,10 +211,8 @@ function setupEventListeners() {
   });
 
   document.addEventListener("click", (event) => {
-    if (
-      event.target.classList.contains("popup_opened") ||
-      event.target.classList.contains("popup__close")
-    ) {
+    if (event.target.classList.contains("popup_opened") || 
+        event.target.classList.contains("popup__close")) {
       closeModal(event.target.closest(".popup"));
     }
   });
