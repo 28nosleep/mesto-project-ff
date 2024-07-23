@@ -105,8 +105,8 @@ function handleNewCardFormSubmit(evt) {
     });
 }
 
-// Функция для обработки удаления карточки
-function handleDeleteCard(cardElement, cardId) {
+// Функция для открытия попапа подтверждения удаления карточки
+function openDeleteConfirmPopup(cardElement, cardId) {
   const confirmButton = deleteConfirmPopup.querySelector(".popup__button_type_confirm");
   const cancelButton = deleteConfirmPopup.querySelector(".popup__button_type_cancel");
   const originalButtonText = confirmButton.textContent;
@@ -126,22 +126,49 @@ function handleDeleteCard(cardElement, cardId) {
       .finally(() => {
         confirmButton.textContent = originalButtonText;
         confirmButton.disabled = false;
+        removeListeners();
       });
   }
 
   function cancelDelete() {
     closeModal(deleteConfirmPopup);
+    removeListeners();
   }
 
-  openModal(deleteConfirmPopup);
+  function handleOverlayClick(event) {
+    if (event.target === deleteConfirmPopup) {
+      closeModal(deleteConfirmPopup);
+      removeListeners();
+    }
+  }
 
-  // Удаляем предыдущие обработчики событий
-  confirmButton.removeEventListener("click", confirmDelete);
-  cancelButton.removeEventListener("click", cancelDelete);
+  function removeListeners() {
+    confirmButton.removeEventListener("click", confirmDelete);
+    cancelButton.removeEventListener("click", cancelDelete);
+    deleteConfirmPopup.removeEventListener("mousedown", handleOverlayClick);
+    deleteConfirmPopup.querySelector(".popup__close").removeEventListener("click", handleCloseClick);
+  }
+
+  function handleCloseClick() {
+    closeModal(deleteConfirmPopup);
+    removeListeners();
+  }
+
+  // Удаляем предыдущие обработчики событий, если они есть
+  removeListeners();
 
   // Добавляем новые обработчики событий
-  confirmButton.addEventListener("click", confirmDelete, { once: true });
-  cancelButton.addEventListener("click", cancelDelete, { once: true });
+  confirmButton.addEventListener("click", confirmDelete);
+  cancelButton.addEventListener("click", cancelDelete);
+  deleteConfirmPopup.addEventListener("mousedown", handleOverlayClick);
+  deleteConfirmPopup.querySelector(".popup__close").addEventListener("click", handleCloseClick);
+
+  openModal(deleteConfirmPopup);
+}
+
+// Функция для обработки удаления карточки
+function handleDeleteCard(cardElement, cardId) {
+  openDeleteConfirmPopup(cardElement, cardId);
 }
 
 // Функция для обработки лайка карточки
@@ -187,6 +214,24 @@ function handleAvatarFormSubmit(evt) {
     });
 }
 
+// Функция для обработки кликов по карточкам
+function handleCardClick(event) {
+  const card = event.target.closest(".card");
+  if (!card) return;
+
+  if (event.target.classList.contains("card__delete-button")) {
+    handleDeleteCard(card, card.dataset.cardId);
+  } else if (event.target.classList.contains("card__like-button")) {
+    handleLikeCard(card, card.dataset.cardId);
+  } else if (event.target.classList.contains("card__image")) {
+    const cardData = {
+      name: card.querySelector(".card__title").textContent,
+      link: event.target.src
+    };
+    handleImageClick(cardData);
+  }
+}
+
 // Функция для настройки обработчиков событий
 function setupEventListeners() {
   newCardAddButton.addEventListener("click", () => {
@@ -220,6 +265,7 @@ function setupEventListeners() {
   editProfileForm.addEventListener("submit", handleProfileFormSubmit);
   newCardForm.addEventListener("submit", handleNewCardFormSubmit);
   avatarEditForm.addEventListener("submit", handleAvatarFormSubmit);
+  placesList.addEventListener("click", handleCardClick);
 }
 
 // Функция для отрисовки карточек
@@ -232,13 +278,15 @@ function renderCards(cards) {
 
 // Функция создания карточки
 function createCardElement(cardData) {
-  return createCard(
+  const card = createCard(
     cardData,
     handleDeleteCard,
     handleLikeCard,
     handleImageClick,
     currentUserId
   );
+  card.dataset.cardId = cardData._id;
+  return card;
 }
 
 // Инициализация приложения
